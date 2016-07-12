@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.yy.imagepicker.activity.PreviewImageActivity">
+
+    <FrameLayout
+        android:id="@+id/preview_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/grid_bg_color" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="#ddffffff">
+
+        <ImageButton
+            android:id="@+id/back_btn"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="10dp"
+            android:background="@color/transparent"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_back" />
+
+        <TextView
+            android:id="@+id/position_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/back_btn"
+            android:layout_centerVertical="true"
+            android:text="12/222" />
+
+        <Button
+            android:id="@+id/complete_action"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:minWidth="60dp"
+            android:background="@drawable/bg_preview_next_btn"
+            android:textColor="@color/white"
+            android:text="完成" />
+    </RelativeLayout>
+
+    <com.yy.imagepicker.view.ToggleView
+        android:id="@+id/toggle_view"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="70dp"
+        android:src="@mipmap/ic_unpick" />
+
+</RelativeLayout>

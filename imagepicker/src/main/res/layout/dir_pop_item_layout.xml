@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:gravity="center_vertical">
+
+    <RelativeLayout
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        >
+        <ImageView
+            android:id="@+id/dir_pop_imageView"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="8dp"
+            android:src="@mipmap/pic_default"
+            android:scaleType="centerCrop"
+            />
+
+        <TextView
+            android:id="@+id/badge_view"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:text="4"
+            android:textSize="10sp"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:background="@drawable/badge_bg"
+            android:layout_alignParentRight="true"/>
+
+    </RelativeLayout>
+
+
+    <TextView
+        android:id="@+id/dir_nameView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="asdf"
+        android:textSize="20sp"
+        android:layout_marginLeft="10dp"
+        android:textColor="@color/black"/>
+
+    <TextView
+        android:id="@+id/image_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="(122)"
+        android:textSize="12sp"
+        android:layout_marginLeft="10dp"/>
+
+</LinearLayout>
