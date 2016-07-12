@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -15,6 +16,8 @@ import android.widget.ImageView;
 import com.yy.imagepicker.view.touchview.easing.Cubic;
 import com.yy.imagepicker.view.touchview.easing.Easing;
 import com.yy.imagepicker.view.touchview.graphics.FastBitmapDrawable;
+
+import java.util.concurrent.Executor;
 
 /**
  * Base View to manage image zoom/scrool/pinch operations
@@ -848,7 +851,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         if (LOG_ENABLED) {
             Log.i(LOG_TAG, "zoomTo: " + scale);
         }
-
         if (scale > getMaxScale())
             scale = getMaxScale();
         if (scale < getMinScale())
