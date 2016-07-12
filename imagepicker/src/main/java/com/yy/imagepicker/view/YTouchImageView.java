@@ -161,6 +161,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
     private Matrix getDisplayMatrix(){
         mDisplayMatrix.set(mBaseMatrix);
         mDisplayMatrix.postConcat(mSuppMatrix);
+        print(mSuppMatrix+"");
         return mDisplayMatrix;
     }
 
@@ -177,6 +178,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         public boolean onScale(ScaleGestureDetector detector) {
             float span = detector.getCurrentSpan() - detector.getPreviousSpan();
             float targetScale = getScale(mSuppMatrix) * detector.getScaleFactor();
+            Log.e(">>>", detector.getScaleFactor()+"");
             if (targetScale > 10.0f){
                 targetScale = 10.0f ;
             }
@@ -201,8 +203,8 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
             preDegree = a;
 
             Log.e("deltaDegree==" , ""+(deltaDegree));
-
-            return super.onScale(detector);
+            //必须return true 否则认为该事件没有被消费 不能计算出准确的sacle
+            return true;
         }
 
         @Override

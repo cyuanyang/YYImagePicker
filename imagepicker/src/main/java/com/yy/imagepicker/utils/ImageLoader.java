@@ -76,7 +76,6 @@ public class ImageLoader {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
-                Log.e(",,,," , ",,,,");
                 if (msg.what == 1)
                 mExecutorService.execute(getTask());
                 try {
@@ -84,8 +83,6 @@ public class ImageLoader {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
-                Log.e("111" , "1111");
             }
         };
         mExecutorService = Executors.newFixedThreadPool(Attach.ThreadNumber);
@@ -148,7 +145,6 @@ public class ImageLoader {
             addTask(new Runnable() {
                 @Override
                 public void run() {
-                    Log.e("run" , "run");
                     //根据url设置tag 确定唯一需要显示的是哪一个view
                     Object tag = imageView.getTag(R.id.yyloadimage_tag);
                     if (tag!=null && uriStr.equals(tag.toString())){
@@ -187,7 +183,4 @@ public class ImageLoader {
         public Bitmap bitmap;
 
     }
-
-
-
 }
