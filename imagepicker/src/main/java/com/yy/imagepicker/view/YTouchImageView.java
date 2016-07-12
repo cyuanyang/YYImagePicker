@@ -2,6 +2,8 @@ package com.yy.imagepicker.view;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -153,9 +155,39 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         setImageMatrix(matrix);
     }
 
-    private void scale(float scale){
-        Matrix matrix = new Matrix();
-        matrix.postScale(scale , scale);
+    private void zoomTo(float targetScale , float centerX , float centerY ){
+        if (targetScale > 10.0f){
+            targetScale = 10.0f ;
+        }
+        if (targetScale < 0.5f){
+            targetScale = 0.5f;
+        }
+        float delta = targetScale / getScale(mSuppMatrix);
+        Log.i("/////", "postScale: " + delta + "");
+        mSuppMatrix.postScale(delta , delta ,centerX , centerY);
+        setImageMatrix(getDisplayMatrix());
+
+        getImageRect();
+    }
+
+    /**
+     * 得到Bitmap的Rect
+     */
+    private RectF getImageRect(){
+        Drawable drawable = getDrawable();
+        if (drawable==null)return new RectF(0 , 0 , 0 ,0 );
+        RectF rectF = new RectF(0 , 0 ,drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight() );
+        Matrix m = getDisplayMatrix();
+        m.mapRect(rectF);
+        print("rectf==" + rectF);
+        return rectF;
+    }
+
+    /**
+     * 平移到中间
+     */
+    private void center(){
+
     }
 
     private Matrix getDisplayMatrix(){
@@ -176,23 +208,9 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            float span = detector.getCurrentSpan() - detector.getPreviousSpan();
             float targetScale = getScale(mSuppMatrix) * detector.getScaleFactor();
-            Log.e(">>>", detector.getScaleFactor()+"");
-            if (targetScale > 10.0f){
-                targetScale = 10.0f ;
-            }
-            if (targetScale < 0.5f){
-                targetScale = 0.5f;
-            }
-            float delta = targetScale / getScale(mSuppMatrix);
-            Log.i("/////", "postScale: " + delta + "");
-
-            mSuppMatrix.postScale(delta , delta ,detector.getFocusX() , detector.getFocusY());
-
-            setImageMatrix(getDisplayMatrix());
-
-
+            zoomTo(targetScale , detector.getFocusX() , detector.getFocusY());
+            center();
 
             float csx = detector.getCurrentSpanX();
             float csy = detector.getCurrentSpanY();
