@@ -21,11 +21,15 @@ import android.widget.ImageView;
  */
 public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
-    private ScaleGestureDetector scaleGestureDetector ;
+    private final static int SCALEING = 1; //正在缩放
+    private final static int NORMAL = 0;//啥也没干
+    private final static int TRABSLATE =2;//正在平移
+
+    private ScaleGestureDetector mScaleGestureDetector ;
     private GestureDetector mGestureDetector;
 
-    private double deltaDegree = 0 ;
-    private double preDegree = 0 ;
+    private float deltaDegree = 0 ;
+    private float preDegree = 0 ;
 
     private Matrix mBaseMatrix = new Matrix(); //图片的矩阵
 
@@ -35,9 +39,13 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
     private boolean isSizeChanged = false;
 
+    private int mState = NORMAL;//状态
     /////////////////////////////////////////////////
     private int viewWidth , viewHeight; //imageView 的宽高
     private int imageWidth , imagHeight;// 图片的宽高
+
+    ////////////////////////////////////////////////
+    private float doubleTapScale = 4.0f;
 
     public YTouchImageView(Context context) {
         super(context);
@@ -61,7 +69,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         this.setOnTouchListener(this);
         mGestureDetector = new GestureDetector
                 (this.getContext() , new GestureListener());
-        scaleGestureDetector = new ScaleGestureDetector
+        mScaleGestureDetector = new ScaleGestureDetector
                 (this.getContext() , new ScaleGestureListener());
     }
 
@@ -103,6 +111,18 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         matrix.getValues(mMatrixValues);
         return mMatrixValues[Matrix.MSCALE_X];
     }
+
+    protected float getTranslateX(Matrix matrix){
+        float[] values = new float[9];
+        matrix.getValues(values);
+        return values[Matrix.MTRANS_X];
+    }
+
+    protected float getTranslateY(Matrix matrix){
+        float[] values = new float[9];
+        matrix.getValues(values);
+        return values[Matrix.MTRANS_Y];
+    }
     /**
      * 初始化加载的图片的宽高
      */
@@ -132,7 +152,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        scaleGestureDetector.onTouchEvent(event);
+        mScaleGestureDetector.onTouchEvent(event);
         mGestureDetector.onTouchEvent(event);
         return true;
     }
@@ -166,10 +186,53 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         Log.i("/////", "postScale: " + delta + "");
         mSuppMatrix.postScale(delta , delta ,centerX , centerY);
         setImageMatrix(getDisplayMatrix());
-
-        getImageRect();
     }
 
+    private void translateTo(float deltaX , float deltaY){
+        Matrix matrix = getDisplayMatrix();
+        RectF rectF = getImageRect();
+        if (deltaX >= 0){
+            //向右移动
+            if (deltaY >= 0){
+                if (rectF.top >=0)deltaY = 0;
+            }
+            if (deltaY < 0){
+                if (rectF.bottom <= viewHeight)deltaY = 0;
+            }
+            if (rectF.left>=0)deltaX = 0;
+            mSuppMatrix.postTranslate(deltaX , deltaY);
+            setImageMatrix(getDisplayMatrix());
+
+            //移动之后矫正
+            RectF rectFend = getImageRect();
+            if (rectFend.left >= 0 ){
+                mSuppMatrix.postTranslate(-rectFend.left ,0);
+                setImageMatrix(getDisplayMatrix());
+            }
+        }
+        //左滑
+        if (deltaX < 0){
+            if (deltaY >= 0){
+                if (rectF.top >=0)deltaY = 0;
+            }
+            if (deltaY < 0){
+                if (rectF.bottom < viewHeight) deltaY = 0;
+            }
+            if (rectF.right <= viewWidth)deltaX = 0;
+            mSuppMatrix.postTranslate(deltaX , deltaY);
+            setImageMatrix(getDisplayMatrix());
+            RectF rectFend = getImageRect();
+            if (rectFend.right <= viewWidth){
+                mSuppMatrix.postTranslate(viewWidth-rectFend.right,0);
+                setImageMatrix(getDisplayMatrix());
+            }
+        }
+    }
+
+    private void rotateTo(float degree , float centerX , float centerY){
+        mSuppMatrix.postRotate(degree ,viewWidth/2 , viewHeight/2);
+        setImageMatrix(getDisplayMatrix());
+    }
     /**
      * 得到Bitmap的Rect
      */
@@ -179,7 +242,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         RectF rectF = new RectF(0 , 0 ,drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight() );
         Matrix m = getDisplayMatrix();
         m.mapRect(rectF);
-        print("rectf==" + rectF);
+        print("getImageRect==" + rectF);
         return rectF;
     }
 
@@ -193,7 +256,6 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
     private Matrix getDisplayMatrix(){
         mDisplayMatrix.set(mBaseMatrix);
         mDisplayMatrix.postConcat(mSuppMatrix);
-        print(mSuppMatrix+"");
         return mDisplayMatrix;
     }
 
@@ -214,30 +276,38 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
             float csx = detector.getCurrentSpanX();
             float csy = detector.getCurrentSpanY();
-            double a = Math.toDegrees(Math.atan(csy/csx));
+            float ca = (float) Math.toDegrees(Math.atan(csy/csx));
 
-            deltaDegree += a - preDegree;
+            float psx = detector.getPreviousSpanX();
+            float psy = detector.getPreviousSpanY();
+            float pa = (float) Math.toDegrees(Math.atan(psy/psx));
 
-            preDegree = a;
+            print(ca +" pa==  " + pa);
+            deltaDegree = ca - pa;
+
 
             Log.e("deltaDegree==" , ""+(deltaDegree));
-            //必须return true 否则认为该事件没有被消费 不能计算出准确的sacle
+//            if (Math.abs(deltaDegree) > 1){
+                rotateTo(-deltaDegree , detector.getFocusX() , detector.getFocusY());
+//            }
+            //必须return true 否则认为该事件没有被消费 不能计算出准确的scale
             return true;
         }
 
         @Override
         public boolean onScaleBegin(ScaleGestureDetector detector) {
             deltaDegree = 0;
-
+            mState = SCALEING;
             float csx = detector.getCurrentSpanX();
             float csy = detector.getCurrentSpanY();
-            double a = Math.toDegrees(Math.atan(csy/csx));
+            float a = (float) Math.toDegrees(Math.atan(csy/csx));
             preDegree = a;
             return super.onScaleBegin(detector);
         }
 
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
+            mState = NORMAL;
             super.onScaleEnd(detector);
         }
 
@@ -250,14 +320,44 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
         @Override
         public boolean onDoubleTap(MotionEvent e) {
+            float currentScale = getScale(mSuppMatrix);
+            if (currentScale >= 10){
+                zoomTo(1, e.getX() , e.getY());
+            }else {
+                zoomTo(doubleTapScale+currentScale, e.getX() , e.getY());
+            }
+            return true;
+        }
 
-            Matrix matrix = new Matrix();
-            matrix.postScale(2f,2f);
-            setImageMatrix(matrix);
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+            print("onScroll");
+            //非两个手指时执行
+            if (e1==null || e2 == null)
+                return false;
+            if (e1.getPointerCount() > 1 || e2.getPointerCount() > 1){
+                return false;
+            }
+            if (mScaleGestureDetector.isInProgress())
+                return false;
+            translateTo(-distanceX , -distanceY);
+            return true;
+        }
 
-            return super.onDoubleTap(e);
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            return super.onFling(e1, e2, velocityX, velocityY);
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(MotionEvent e) {
+            return super.onDoubleTapEvent(e);
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            return super.onSingleTapConfirmed(e);
         }
     }
-
 
 }
