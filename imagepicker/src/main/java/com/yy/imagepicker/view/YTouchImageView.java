@@ -2,7 +2,7 @@ package com.yy.imagepicker.view;
 
 import android.content.Context;
 import android.graphics.Matrix;
-import android.graphics.Rect;
+import android.graphics.Point;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.ImageView;
+
 
 
 /**
@@ -25,11 +26,11 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
     private final static int NORMAL = 0;//啥也没干
     private final static int TRABSLATE =2;//正在平移
 
-    private ScaleGestureDetector mScaleGestureDetector ;
+    private YScaleGestureDetector mScaleGestureDetector ;
     private GestureDetector mGestureDetector;
 
     private float deltaDegree = 0 ;
-    private float preDegree = 0 ;
+    private float allDegree = 0 ;
 
     private Matrix mBaseMatrix = new Matrix(); //图片的矩阵
 
@@ -69,7 +70,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         this.setOnTouchListener(this);
         mGestureDetector = new GestureDetector
                 (this.getContext() , new GestureListener());
-        mScaleGestureDetector = new ScaleGestureDetector
+        mScaleGestureDetector = new YScaleGestureDetector
                 (this.getContext() , new ScaleGestureListener());
     }
 
@@ -152,7 +153,33 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+
+//        int action = event.getAction() & MotionEvent.ACTION_MASK;
+//
+//        switch (action){
+//            case MotionEvent.ACTION_POINTER_DOWN:{
+//                if (event.getActionIndex()>1){
+//
+//                }else {
+//                    Point a = new Point((int)event.getX(0) , (int)event.getY(0));
+//                    Point b = new Point((int)event.getX(1) , (int)event.getY(1));
+//
+//                    print(a +" b ==" + b);
+//                }
+//            }
+//
+//            break;
+//
+//            case MotionEvent.ACTION_MOVE:{
+//
+//
+//            }
+//            break;
+//        }
+
+
         mScaleGestureDetector.onTouchEvent(event);
+
         mGestureDetector.onTouchEvent(event);
         return true;
     }
@@ -176,13 +203,13 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
     }
 
     private void zoomTo(float targetScale , float centerX , float centerY ){
-        if (targetScale > 10.0f){
-            targetScale = 10.0f ;
-        }
-        if (targetScale < 0.5f){
-            targetScale = 0.5f;
-        }
-        float delta = targetScale / getScale(mSuppMatrix);
+//        if (targetScale > 10.0f){
+//            targetScale = 10.0f ;
+//        }
+//        if (targetScale < 0.5f){
+//            targetScale = 0.5f;
+//        }
+        float delta = targetScale ;
         Log.i("/////", "postScale: " + delta + "");
         mSuppMatrix.postScale(delta , delta ,centerX , centerY);
         setImageMatrix(getDisplayMatrix());
@@ -230,6 +257,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
     }
 
     private void rotateTo(float degree , float centerX , float centerY){
+        if (degree < 0.2 && degree > -0.2)return;
         mSuppMatrix.postRotate(degree ,viewWidth/2 , viewHeight/2);
         setImageMatrix(getDisplayMatrix());
     }
@@ -266,30 +294,47 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
     /**
      * 缩放手势检测
      */
-    class ScaleGestureListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+    class ScaleGestureListener extends YScaleGestureDetector.YScaleGestureListener {
 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            float targetScale = getScale(mSuppMatrix) * detector.getScaleFactor();
+            float targetScale = detector.getScaleFactor();
             zoomTo(targetScale , detector.getFocusX() , detector.getFocusY());
             center();
 
-            float csx = detector.getCurrentSpanX();
+
+//            float csx = detector.getCurrentSpanX();
             float csy = detector.getCurrentSpanY();
-            float ca = (float) Math.toDegrees(Math.atan(csy/csx));
+            float ca = (float) Math.toDegrees(Math.asin(csy/detector.getCurrentSpan()));
 
-            float psx = detector.getPreviousSpanX();
+//            float psx = detector.getPreviousSpanX();
             float psy = detector.getPreviousSpanY();
-            float pa = (float) Math.toDegrees(Math.atan(psy/psx));
+            float pa = (float) Math.toDegrees(Math.asin(psy/detector.getCurrentSpan()));
 
-            print(ca +" pa==  " + pa);
             deltaDegree = ca - pa;
 
+            if (allDegree != -1){
+                allDegree += deltaDegree;
+                if (allDegree >= 10 || allDegree <= -10){
+                    allDegree = -1;
+                }
+            }
 
-            Log.e("deltaDegree==" , ""+(deltaDegree));
-//            if (Math.abs(deltaDegree) > 1){
-                rotateTo(-deltaDegree , detector.getFocusX() , detector.getFocusY());
-//            }
+            float absDelta = Math.abs(deltaDegree);
+
+            if (allDegree == -1){
+                YScaleGestureDetector detector1 = (YScaleGestureDetector) detector;
+                if (detector1.getIsClockWise()){
+                    rotateTo(absDelta , viewWidth/2 , viewHeight/2);
+                }else {
+                    rotateTo(-absDelta , viewWidth/2 , viewHeight/2);
+                }
+            }
+
+            Log.e("deltaDegree==" , ""+(deltaDegree) + "all ==" +allDegree);
+
+
+
             //必须return true 否则认为该事件没有被消费 不能计算出准确的scale
             return true;
         }
@@ -298,10 +343,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         public boolean onScaleBegin(ScaleGestureDetector detector) {
             deltaDegree = 0;
             mState = SCALEING;
-            float csx = detector.getCurrentSpanX();
-            float csy = detector.getCurrentSpanY();
-            float a = (float) Math.toDegrees(Math.atan(csy/csx));
-            preDegree = a;
+            allDegree = 0;
             return super.onScaleBegin(detector);
         }
 
@@ -310,7 +352,6 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
             mState = NORMAL;
             super.onScaleEnd(detector);
         }
-
     }
 
     /**
