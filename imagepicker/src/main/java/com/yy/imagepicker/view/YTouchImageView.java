@@ -304,7 +304,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            float targetScale = detector.getScaleFactor() *getScale(mSuppMatrix);
+//            float targetScale = detector.getScaleFactor() *getScale(mSuppMatrix);
             zoomTo(detector.getScaleFactor() , detector.getFocusX() , detector.getFocusY());
             center();
 
@@ -328,14 +328,14 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
             if (allDegree == -1){
                 YScaleGestureDetector detector1 = (YScaleGestureDetector) detector;
                 if (detector1.getIsClockWise()){
-                    rotateTo(absDelta , detector.getFocusX() , detector.getFocusY());
+                    rotateTo(absDelta ,viewWidth/2, viewHeight/2);
                 }else {
-                    rotateTo(-absDelta , detector.getFocusX() , detector.getFocusY());
+                    rotateTo(-absDelta , viewWidth/2 , viewHeight/2);
                 }
             }
 
             Log.e("deltaDegree==" , ""+(deltaDegree) + "all ==" +allDegree);
-            
+
             //必须return true 否则认为该事件没有被消费 不能计算出准确的scale
             return true;
         }

@@ -72,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements
         for (ImageItem imageItem : pickedItems) {
             addImageView(imageItem.getImagePath());
         }
-
     }
 
 
