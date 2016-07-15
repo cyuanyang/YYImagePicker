@@ -113,6 +113,12 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
         return mMatrixValues[Matrix.MSCALE_X];
     }
 
+//    private float getRotate(Matrix matrix){
+//        float[] values = new float[9];
+//        matrix.getValues(values);
+//        return values[Matrix.];
+//    }
+
     protected float getTranslateX(Matrix matrix){
         float[] values = new float[9];
         matrix.getValues(values);
@@ -258,7 +264,7 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
     private void rotateTo(float degree , float centerX , float centerY){
         if (degree < 0.2 && degree > -0.2)return;
-        mSuppMatrix.postRotate(degree ,viewWidth/2 , viewHeight/2);
+        mSuppMatrix.postRotate(degree ,centerX , centerY);
         setImageMatrix(getDisplayMatrix());
     }
     /**
@@ -298,16 +304,13 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
-            float targetScale = detector.getScaleFactor();
-            zoomTo(targetScale , detector.getFocusX() , detector.getFocusY());
+            float targetScale = detector.getScaleFactor() *getScale(mSuppMatrix);
+            zoomTo(detector.getScaleFactor() , detector.getFocusX() , detector.getFocusY());
             center();
 
-
-//            float csx = detector.getCurrentSpanX();
             float csy = detector.getCurrentSpanY();
             float ca = (float) Math.toDegrees(Math.asin(csy/detector.getCurrentSpan()));
 
-//            float psx = detector.getPreviousSpanX();
             float psy = detector.getPreviousSpanY();
             float pa = (float) Math.toDegrees(Math.asin(psy/detector.getCurrentSpan()));
 
@@ -325,16 +328,14 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
             if (allDegree == -1){
                 YScaleGestureDetector detector1 = (YScaleGestureDetector) detector;
                 if (detector1.getIsClockWise()){
-                    rotateTo(absDelta , viewWidth/2 , viewHeight/2);
+                    rotateTo(absDelta , detector.getFocusX() , detector.getFocusY());
                 }else {
-                    rotateTo(-absDelta , viewWidth/2 , viewHeight/2);
+                    rotateTo(-absDelta , detector.getFocusX() , detector.getFocusY());
                 }
             }
 
             Log.e("deltaDegree==" , ""+(deltaDegree) + "all ==" +allDegree);
-
-
-
+            
             //必须return true 否则认为该事件没有被消费 不能计算出准确的scale
             return true;
         }
