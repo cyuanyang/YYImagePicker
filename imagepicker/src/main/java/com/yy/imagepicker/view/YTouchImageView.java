@@ -18,7 +18,7 @@ import android.widget.ImageView;
 /**
  * Created by cyy on 2016/7/8.
  *
- *
+ *   gggg
  */
 public class YTouchImageView extends ImageView implements View.OnTouchListener{
 
