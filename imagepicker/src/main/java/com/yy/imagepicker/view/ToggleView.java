@@ -17,6 +17,7 @@ import com.yy.imagepicker.view.touchview.graphics.FastBitmapDrawable;
 /**
  * Created by cyy on 2016/7/6.
  *  gggg
+ *  dd多读读
  */
 public class ToggleView extends ImageView {
 
