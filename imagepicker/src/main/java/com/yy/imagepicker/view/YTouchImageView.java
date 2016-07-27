@@ -160,33 +160,45 @@ public class YTouchImageView extends ImageView implements View.OnTouchListener{
     @Override
     public boolean onTouch(View v, MotionEvent event) {
 
-//        int action = event.getAction() & MotionEvent.ACTION_MASK;
-//
-//        switch (action){
-//            case MotionEvent.ACTION_POINTER_DOWN:{
-//                if (event.getActionIndex()>1){
-//
-//                }else {
-//                    Point a = new Point((int)event.getX(0) , (int)event.getY(0));
-//                    Point b = new Point((int)event.getX(1) , (int)event.getY(1));
-//
-//                    print(a +" b ==" + b);
-//                }
-//            }
-//
-//            break;
-//
-//            case MotionEvent.ACTION_MOVE:{
-//
-//
-//            }
-//            break;
-//        }
+        int action = event.getAction() & MotionEvent.ACTION_MASK;
+
+        switch (action){
+            case MotionEvent.ACTION_DOWN:{
+
+            }
+            break;
+
+            case MotionEvent.ACTION_POINTER_DOWN:{
+                if (event.getActionIndex()>1){
+
+                }else {
+                    Point a = new Point((int)event.getX(0) , (int)event.getY(0));
+                    Point b = new Point((int)event.getX(1) , (int)event.getY(1));
+
+                    print(a +" b ==" + b);
+                }
+            }
+
+            break;
+
+            case MotionEvent.ACTION_MOVE:{
 
 
-        mScaleGestureDetector.onTouchEvent(event);
+            }
+            break;
 
-        mGestureDetector.onTouchEvent(event);
+            case MotionEvent.ACTION_UP:{
+
+            }
+            break;
+
+
+        }
+
+
+//        mScaleGestureDetector.onTouchEvent(event);
+//
+//        mGestureDetector.onTouchEvent(event);
         return true;
     }
 
