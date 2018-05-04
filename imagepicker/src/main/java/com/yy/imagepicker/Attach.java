@@ -3,7 +3,8 @@ package com.yy.imagepicker;
 import com.yy.imagepicker.utils.ImageLoader;
 
 /**
- * Created by thinkpad on 2016/7/4.
+ * Created by cyy on 2016/7/4.
+ *
  */
 public class Attach {
 
